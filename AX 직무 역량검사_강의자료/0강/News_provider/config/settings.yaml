@@ -1,0 +1,76 @@
+# 일일 뉴스 브리핑 - 실행 설정
+timezone: Asia/Seoul
+window_hours: 24          # 지난 N시간 기사만 대상
+max_items_per_category: 5 # 카테고리별 메일에 노출할 최대 건수
+max_community_per_category: 2 # 카테고리당 커뮤니티(HN/Reddit) 노출 상한 (소스 다양성)
+
+llm:
+  enabled: true           # false 면 키워드 규칙만 사용 (LLM 미호출)
+  model: gemini-3.1-flash-lite # 분류/요약 모델
+
+email:
+  subject_prefix: "📰 데일리 뉴스 브리핑"
+  sender_name: "News Brief Bot"
+
+dedup:
+  title_similarity: 85    # 제목 유사도(%) 이상이면 같은 사건으로 묶음
+
+# 중요도 보정 규칙 (LLM 기본 점수 위에 코드로 가감)
+scoring:
+  major_source_bonus: 1   # 주요 언론/핵심 소스 +점수
+  freshness_hours: 12     # 발행 후 N시간 이내면 신선도 보너스
+  freshness_bonus: 1
+  penalty: 2              # 지역·홍보성 기사 감점폭
+  # 직접 RSS 로 받는 신뢰 소스 (구글뉴스 집계분은 제외)
+  major_sources:
+    - 연합뉴스
+    - 뉴스1
+    - KBS
+    - MBC
+    - SBS
+    - JTBC
+    - YTN
+    - 한국일보
+    - 동아일보
+    - 중앙일보
+    - 경향신문
+    - 한겨레
+    - 매일경제
+    - AI타임즈
+    - GeekNews
+    - 프레시안
+    - 전자신문
+    - 오마이뉴스
+    - 블로터
+    - 지디넷코리아
+    - Hacker News
+    - BBC
+    - CNN
+    - 로이터
+    - 블룸버그
+    - 한국경제신문
+  # 제목에 아래 단어가 있으면 홍보·행사성으로 보고 감점
+  penalty_keywords:
+    [모집, 후원, 행사, 개최, 위촉, 협약, 특강, 설명회, 박람회, 간담회, 위클리피플,
+     체험, 봉사, 캠페인, 공모전, 시상, 축제, 기념식]
+  # 제목에 아래(지역 교육청/지역명+교육)가 있으면 지역 한정으로 보고 감점
+  region_keywords:
+    [교육청, 강원교육, 전북교육, 전남교육, 충북교육, 충남교육, 경북교육, 경남교육,
+     제주교육, 광주교육, 대구교육, 대전교육, 울산교육, 부산교육, 인천교육, 세종교육]
+
+hackernews:
+  enabled: true
+  min_points: 50          # 이 점수 미만은 제외
+  max_items: 50
+
+reddit:
+  enabled: true
+  time: day               # top 기준 기간 (hour/day/week)
+  limit: 25               # 서브레딧당 조회 수
+  min_score: 100          # 이 upvote 미만은 제외
+  subreddits:
+    - MachineLearning
+    - artificial
+    - OpenAI
+    - LocalLLaMA
+    - technology

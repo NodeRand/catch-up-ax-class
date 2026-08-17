@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(PYTHONUTF8=1 py -X utf8 -m newsbrief.main)",
+      "Bash(PYTHONUTF8=1 py -X utf8 -c ' *)",
+      "PowerShell($py = & py -c \"import sys; print\\(sys.executable\\)\"; Write-Output \"PYTHON=$py\"; New-Item -ItemType Directory -Force \"C:\\\\Git\\\\News_provider\\\\logs\" | Out-Null; Write-Output \"logs dir ready\")",
+      "PowerShell(schtasks /Create /SC DAILY /ST 07:00 /TN \"NewsBrief\" /TR \"C:\\\\Git\\\\News_provider\\\\run.bat\" /F)",
+      "PowerShell(schtasks /Run /TN \"NewsBrief\")",
+      "Bash(break)",
+      "WebSearch",
+      "WebFetch(domain:gist.github.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:www.yna.co.kr)",
+      "WebFetch(domain:www.news1.kr)",
+      "WebFetch(domain:news.sbs.co.kr)",
+      "WebFetch(domain:www.ytn.co.kr)",
+      "WebFetch(domain:rss.etnews.com)",
+      "WebFetch(domain:www.bloter.net)"
+    ]
+  }
+}

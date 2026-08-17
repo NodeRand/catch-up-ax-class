@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>쿠폰 프로모션 성과 분석 보고서</title>
+<style>
+html, body { margin: 0; padding: 0; background: #f9f9f7; }
+@media (prefers-color-scheme: dark) {
+  html:where(:not([data-theme="light"])), body:where(:not([data-theme="light"]) *) { background: #0d0d0d; }
+  html:where(:not([data-theme="light"])) { background: #0d0d0d; }
+}
+html[data-theme="dark"], html[data-theme="dark"] body { background: #0d0d0d; }
+img { max-width: 100%; }
+
+.viz-root {
+  color-scheme: light;
+  min-height: 100vh;
+  --surface-1: #fcfcfb;
+  --page: #f9f9f7;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+  --grid: #e1e0d9;
+  --baseline: #c3c2b7;
+  --border: rgba(11,11,11,0.10);
+  --series-1: #2a78d6; /* blue - baseline/normal */
+  --series-2: #eb6834; /* orange - group A */
+  --series-3: #1baf7a; /* aqua - group B */
+  --good: #0ca30c;
+  --critical: #d03b3b;
+  --good-text: #006300;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .viz-root {
+    color-scheme: dark;
+    --surface-1: #1a1a19;
+    --page: #0d0d0d;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #898781;
+    --grid: #2c2c2a;
+    --baseline: #383835;
+    --border: rgba(255,255,255,0.10);
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --good: #0ca30c;
+    --critical: #e66767;
+    --good-text: #0ca30c;
+  }
+}
+:root[data-theme="dark"] .viz-root {
+  color-scheme: dark;
+  --surface-1: #1a1a19;
+  --page: #0d0d0d;
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #898781;
+  --grid: #2c2c2a;
+  --baseline: #383835;
+  --border: rgba(255,255,255,0.10);
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --good: #0ca30c;
+  --critical: #e66767;
+  --good-text: #0ca30c;
+}
+
+* { box-sizing: border-box; }
+.viz-root {
+  background: var(--page);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  padding: 32px 16px 80px;
+  line-height: 1.5;
+}
+.wrap { max-width: 980px; margin: 0 auto; }
+h1 { font-size: 24px; font-weight: 700; margin: 0 0 6px; }
+.subtitle { color: var(--text-secondary); font-size: 14px; margin: 0 0 28px; }
+h2 { font-size: 17px; font-weight: 700; margin: 44px 0 4px; padding-top: 20px; border-top: 1px solid var(--border); }
+h3 { font-size: 14px; font-weight: 700; margin: 22px 0 10px; color: var(--text-primary); }
+p.desc { color: var(--text-secondary); font-size: 13.5px; margin: 0 0 16px; max-width: 760px; }
+.card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 12px; margin-bottom: 8px; }
+.stat-tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+.stat-value { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+.stat-value.critical { color: var(--critical); }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--text-secondary); margin-bottom: 10px; }
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; font-variant-numeric: normal; }
+th { color: var(--text-muted); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: .02em; }
+td.code { font-weight: 700; }
+td.status-적자 { color: var(--critical); font-weight: 700; }
+td.status-흑자 { color: var(--text-secondary); }
+.tooltip { position: fixed; pointer-events: none; background: var(--surface-1); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); z-index: 50; display: none; white-space: nowrap; }
+.tooltip .t-title { font-weight: 700; margin-bottom: 3px; }
+.tooltip .t-row { color: var(--text-secondary); }
+svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; fill: var(--text-secondary); }
+svg .axis-label { fill: var(--text-muted); font-size: 9.5px; }
+svg .ref-label { fill: var(--text-muted); font-size: 10.5px; }
+.callout { background: var(--surface-1); border-left: 3px solid var(--critical); border-radius: 0 8px 8px 0; padding: 12px 16px; font-size: 13.5px; color: var(--text-secondary); margin: 12px 0; }
+.callout b { color: var(--text-primary); }
+.callout.good { border-left-color: var(--good); }
+ul.reco { font-size: 13.5px; color: var(--text-secondary); padding-left: 20px; }
+ul.reco li { margin-bottom: 8px; }
+ul.reco b { color: var(--text-primary); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+.foot-note { font-size: 11.5px; color: var(--text-muted); margin-top: 6px; }
+.lead-badge { display:inline-block; font-size:11px; font-weight:700; letter-spacing:.03em; color:#fff; background:var(--critical); border-radius:4px; padding:2px 8px; margin-right:8px; vertical-align:middle; }
+</style>
+</head>
+<body>
+
+<div class="viz-root">
+<div class="wrap">
+
+<h1>쿠폰 프로모션 성과 분석 보고서</h1>
+<p class="subtitle">데이터 기준: 7.쿠폰별성과표.xlsx(집계표) · 6.GA5_주문종합.xlsx(주문 원본, 결제완료 8,322건) · 2025-01 ~ 2025-06</p>
+
+<div class="stat-row" id="statRow"></div>
+
+<div class="callout" id="execSummary"></div>
+
+<h2 style="margin-top:20px; border-top:none; padding-top:0;">결론 및 요청사항</h2>
+<p class="desc">쿠폰 44개 중 8개가 적자이며 원인은 두 가지로 구분됩니다. 아래는 그 조치 요청사항이며, 근거가 되는 상세 데이터·차트는 이어지는 섹션에 첨부했습니다.</p>
+<div class="card">
+<ul class="reco">
+  <li><span class="lead-badge">긴급</span><b>네이버·쿠팡 채널 쿠폰 정산 로직 점검</b> — CP04·CP10·CP11·CP40에서 발견된 것과 동일한 채널 연동 이중할인 패턴이 다른 25%대 쿠폰이나 향후 신규 쿠폰에도 재발할 수 있으므로, 네이버·쿠팡 채널 연동 시스템에서 쿠폰 할인액이 이중 반영되는지(예: 채널 자체 프로모션과 합산 기록) 우선 확인이 필요합니다.</li>
+  <li><span class="lead-badge">긴급</span><b>CP19·CP27·CP32·CP34 쿠폰 즉시 중단 또는 할인율 재조정</b> — 채널·시점과 무관하게 구조적으로 45~65% 할인율이 적용되고 있어, 방치 시 매 건 손실이 누적됩니다. 쿠폰 마스터 등록 시 할인율 입력 검증(예: 30% 초과 시 승인 필수) 절차 도입을 권고합니다.</li>
+  <li><b>[재발 방지] 쿠폰 발행 전 마진 시뮬레이션 의무화</b> — 매출이익률이 30%로 고정된 구조에서는 할인율 30%가 손익분기선입니다. 쿠폰 설계 단계에서 이 임계값을 자동 경고하는 체크를 추가하면 그룹B와 같은 설계 오류를 사전에 차단할 수 있습니다.</li>
+  <li><b>[모니터링] 채널별 할인율 자동 모니터링 대시보드 구축</b> — 이번 분석처럼 쿠폰×채널 교차 할인율을 정기적으로 비교하면, 특정 채널에서만 발생하는 이상 할인을 조기에 발견할 수 있습니다.</li>
+</ul>
+</div>
+
+<div class="callout good">
+  <b>종합 임팩트</b> — 그룹A 4개 쿠폰은 채널 버그만 해결해도 전부 흑자(순이익 합계 -3,880,409원 → +2,735,050원)로 전환됩니다. 그룹B 4개 쿠폰은 설계 오류로 인한 초과 할인이 약 27,181,302원에 달하며, 정상 할인율이었다면 순이익 합계는 -15,064,697원이 아닌 +12,116,605원이 되었을 것으로 추정됩니다.
+</div>
+
+<h2>근거 1. 원인 분석 요약 — GA5_주문종합 원 데이터 검증</h2>
+<p class="desc">적자 8개 쿠폰의 주문 건별 할인율을 판매채널(11번가·G마켓·이마트·네이버·쿠팡)별로 쪼개보니, 완전히 다른 두 가지 원인이 결합되어 있었습니다.</p>
+
+<h3>그룹A — 특정 채널(네이버·쿠팡) 이중할인 오류 (CP04, CP10, CP11, CP40)</h3>
+<p class="desc">이 4개 쿠폰은 <b style="color:var(--text-primary)">11번가·G마켓·이마트에서는 정확히 25.0% 할인율로 일관</b>되게 적용되어 원래 설계값(25% 정률쿠폰)대로 동작합니다. 그러나 <b style="color:var(--text-primary)">네이버·쿠팡 채널 주문 건에서만 할인율이 54~57%로 원래의 2배 이상 폭증</b>합니다. 6개월 전 기간에 걸쳐 고르게 나타나 특정 시점의 일시 장애가 아니라 <b style="color:var(--text-primary)">네이버·쿠팡 채널 연동/정산 프로세스의 구조적 이중할인 오류</b>로 판단됩니다.</p>
+<div class="card">
+  <div class="legend">
+    <span class="legend-item"><span class="swatch" style="background:var(--series-1)"></span>정상 채널</span>
+    <span class="legend-item"><span class="swatch" style="background:var(--critical)"></span>이상 채널 (네이버·쿠팡)</span>
+  </div>
+  <svg id="chartGroupA" viewBox="0 0 920 260" width="100%" height="260"></svg>
+  <p class="foot-note">점선: 4개 쿠폰의 설계 의도 할인율 25%</p>
+</div>
+
+<h3>그룹B — 채널과 무관한 쿠폰 자체 설계 오류 (CP19, CP27, CP32, CP34)</h3>
+<p class="desc">이 4개 쿠폰은 5개 채널 <b style="color:var(--text-primary)">전체에서 균일하게 45~65%(평균 약 55%) 할인율</b>이 적용됩니다. 채널, 주문일(요일·월), 주문 금액과의 상관관계를 모두 확인했으나 유의미한 연관성이 없었습니다(매출액-할인율 상관계수 -0.03). 즉 특정 채널이나 시점의 결함이 아니라 <b style="color:var(--text-primary)">쿠폰 마스터 데이터 등록 단계에서 할인율 자체가 잘못 설정</b>된 것으로 판단됩니다.</p>
+<div class="card">
+  <div class="legend">
+    <span class="legend-item"><span class="swatch" style="background:var(--critical)"></span>전 채널 이상 할인율</span>
+  </div>
+  <svg id="chartGroupB" viewBox="0 0 920 260" width="100%" height="260"></svg>
+  <p class="foot-note">점선: 정상 쿠폰 평균 할인율 10%</p>
+</div>
+
+<h2>근거 2. 재무적 영향 정량화</h2>
+<p class="desc">두 그룹의 원인이 다르므로 개선 시나리오도 다릅니다. 그룹A는 네이버·쿠팡의 초과 할인분만 정상 수준(25%)으로 복원했을 때, 그룹B는 정상 쿠폰 평균(10%)으로 재설계했을 때를 가정했습니다.</p>
+
+<div class="grid-2">
+  <div class="card">
+    <h3 style="margin-top:0">그룹A — 채널 버그 제거 시</h3>
+    <table id="groupATable"></table>
+    <p class="foot-note">가정: 네이버·쿠팡 주문 할인율을 설계값 25%로 정상화</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">그룹B — 정상 할인율(10%) 재설계 시</h3>
+    <table id="groupBTable"></table>
+    <p class="foot-note">가정: 전 채널 할인율을 정상 쿠폰 평균 10%로 재설정</p>
+  </div>
+</div>
+
+<h2>근거 3. 쿠폰별 순이익 성과 개요 (44개 쿠폰)</h2>
+<p class="desc">44개 전체 쿠폰을 순이익 기준으로 정렬했습니다. 매출이익률은 전 쿠폰 공통 30%(원가율 70%) 구조이므로, 할인율이 30%를 넘는 순간 이론적으로 무조건 적자가 발생합니다. 붉은색 막대 8개가 적자 쿠폰입니다.</p>
+<div class="card">
+  <div class="legend">
+    <span class="legend-item"><span class="swatch" style="background:var(--good)"></span>흑자 (36개)</span>
+    <span class="legend-item"><span class="swatch" style="background:var(--critical)"></span>적자 (8개)</span>
+  </div>
+  <svg id="chartRanking" viewBox="0 0 920 678" width="100%" height="678"></svg>
+</div>
+
+<h2>근거 4. 적자 쿠폰 상세 – 할인율 개별 확인</h2>
+<p class="desc">적자로 표시된 8개 쿠폰의 할인율을 정상 쿠폰 평균과 나란히 비교했습니다. 정상 쿠폰(36개)의 평균 할인율은 약 10%인 반면, 적자 쿠폰은 최소 25%에서 최대 55%까지 할인율 자체가 비정상적으로 높습니다. 점선은 손익분기점(할인율 30% = 매출이익률과 동일)입니다.</p>
+<div class="card">
+  <div class="legend">
+    <span class="legend-item"><span class="swatch" style="background:var(--series-1)"></span>정상 쿠폰 평균</span>
+    <span class="legend-item"><span class="swatch" style="background:var(--series-2)"></span>그룹A: 채널 이중할인 (CP04·10·11·40)</span>
+    <span class="legend-item"><span class="swatch" style="background:var(--series-3)"></span>그룹B: 쿠폰 설계 오류 (CP19·27·32·34)</span>
+  </div>
+  <svg id="chartDeficitRate" viewBox="0 0 920 300" width="100%" height="300"></svg>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">적자 쿠폰 8개 상세표</h3>
+  <table id="deficitTable"></table>
+</div>
+
+</div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const couponData = [{"code": "CP05", "revenue": 15466584, "discount": 0, "grossProfit": 4639975, "netProfit": 4639975, "margin": 30.0, "used": 184, "status": "흑자", "discountRate": 0.0}, {"code": "CP43", "revenue": 21750609, "discount": 2162676, "grossProfit": 6525183, "netProfit": 4362507, "margin": 20.06, "used": 243, "status": "흑자", "discountRate": 9.94}, {"code": "CP29", "revenue": 21837910, "discount": 2190905, "grossProfit": 6551373, "netProfit": 4360468, "margin": 19.97, "used": 245, "status": "흑자", "discountRate": 10.03}, {"code": "CP30", "revenue": 21217083, "discount": 2063920, "grossProfit": 6365125, "netProfit": 4301205, "margin": 20.27, "used": 250, "status": "흑자", "discountRate": 9.73}, {"code": "CP20", "revenue": 20966067, "discount": 2071602, "grossProfit": 6289820, "netProfit": 4218218, "margin": 20.12, "used": 240, "status": "흑자", "discountRate": 9.88}, {"code": "CP18", "revenue": 21163053, "discount": 2147992, "grossProfit": 6348916, "netProfit": 4200924, "margin": 19.85, "used": 257, "status": "흑자", "discountRate": 10.15}, {"code": "CP17", "revenue": 20692756, "discount": 2063677, "grossProfit": 6207827, "netProfit": 4144150, "margin": 20.03, "used": 245, "status": "흑자", "discountRate": 9.97}, {"code": "CP39", "revenue": 20449635, "discount": 1992822, "grossProfit": 6134890, "netProfit": 4142068, "margin": 20.25, "used": 232, "status": "흑자", "discountRate": 9.75}, {"code": "CP01", "revenue": 19734248, "discount": 1920220, "grossProfit": 5920274, "netProfit": 4000054, "margin": 20.27, "used": 238, "status": "흑자", "discountRate": 9.73}, {"code": "CP14", "revenue": 19086931, "discount": 1905983, "grossProfit": 5726079, "netProfit": 3820096, "margin": 20.01, "used": 222, "status": "흑자", "discountRate": 9.99}, {"code": "CP23", "revenue": 18969564, "discount": 1889846, "grossProfit": 5690869, "netProfit": 3801023, "margin": 20.04, "used": 239, "status": "흑자", "discountRate": 9.96}, {"code": "CP37", "revenue": 18938824, "discount": 1884406, "grossProfit": 5681647, "netProfit": 3797241, "margin": 20.05, "used": 220, "status": "흑자", "discountRate": 9.95}, {"code": "CP22", "revenue": 18826823, "discount": 1877751, "grossProfit": 5648047, "netProfit": 3770296, "margin": 20.03, "used": 216, "status": "흑자", "discountRate": 9.97}, {"code": "CP02", "revenue": 18627751, "discount": 1835442, "grossProfit": 5588325, "netProfit": 3752883, "margin": 20.15, "used": 226, "status": "흑자", "discountRate": 9.85}, {"code": "CP07", "revenue": 18807787, "discount": 1961336, "grossProfit": 5642336, "netProfit": 3681000, "margin": 19.57, "used": 225, "status": "흑자", "discountRate": 10.43}, {"code": "CP24", "revenue": 17420300, "discount": 1772500, "grossProfit": 5226090, "netProfit": 3453590, "margin": 19.83, "used": 213, "status": "흑자", "discountRate": 10.17}, {"code": "CP28", "revenue": 17108793, "discount": 1724521, "grossProfit": 5132638, "netProfit": 3408117, "margin": 19.92, "used": 197, "status": "흑자", "discountRate": 10.08}, {"code": "CP12", "revenue": 16678939, "discount": 1646717, "grossProfit": 5003682, "netProfit": 3356965, "margin": 20.13, "used": 185, "status": "흑자", "discountRate": 9.87}, {"code": "CP15", "revenue": 16794721, "discount": 1718830, "grossProfit": 5038416, "netProfit": 3319586, "margin": 19.77, "used": 201, "status": "흑자", "discountRate": 10.23}, {"code": "CP35", "revenue": 16057991, "discount": 1637236, "grossProfit": 4817397, "netProfit": 3180161, "margin": 19.8, "used": 193, "status": "흑자", "discountRate": 10.2}, {"code": "CP31", "revenue": 15805550, "discount": 1590722, "grossProfit": 4741665, "netProfit": 3150943, "margin": 19.94, "used": 184, "status": "흑자", "discountRate": 10.06}, {"code": "CP25", "revenue": 15986938, "discount": 1691215, "grossProfit": 4796081, "netProfit": 3104866, "margin": 19.42, "used": 184, "status": "흑자", "discountRate": 10.58}, {"code": "CP42", "revenue": 15334485, "discount": 1565207, "grossProfit": 4600346, "netProfit": 3035138, "margin": 19.79, "used": 186, "status": "흑자", "discountRate": 10.21}, {"code": "CP09", "revenue": 15112199, "discount": 1524708, "grossProfit": 4533660, "netProfit": 3008952, "margin": 19.91, "used": 179, "status": "흑자", "discountRate": 10.09}, {"code": "CP03", "revenue": 14962501, "discount": 1520305, "grossProfit": 4488750, "netProfit": 2968445, "margin": 19.84, "used": 173, "status": "흑자", "discountRate": 10.16}, {"code": "CP06", "revenue": 14635895, "discount": 1431253, "grossProfit": 4390768, "netProfit": 2959516, "margin": 20.22, "used": 167, "status": "흑자", "discountRate": 9.78}, {"code": "CP21", "revenue": 13946097, "discount": 1374604, "grossProfit": 4183829, "netProfit": 2809225, "margin": 20.14, "used": 160, "status": "흑자", "discountRate": 9.86}, {"code": "CP38", "revenue": 13978951, "discount": 1393875, "grossProfit": 4193685, "netProfit": 2799810, "margin": 20.03, "used": 170, "status": "흑자", "discountRate": 9.97}, {"code": "CP13", "revenue": 13372138, "discount": 1298279, "grossProfit": 4011641, "netProfit": 2713362, "margin": 20.29, "used": 153, "status": "흑자", "discountRate": 9.71}, {"code": "CP33", "revenue": 13077029, "discount": 1273108, "grossProfit": 3923109, "netProfit": 2650001, "margin": 20.26, "used": 151, "status": "흑자", "discountRate": 9.74}, {"code": "CP08", "revenue": 12775192, "discount": 1323556, "grossProfit": 3832558, "netProfit": 2509002, "margin": 19.64, "used": 154, "status": "흑자", "discountRate": 10.36}, {"code": "CP16", "revenue": 12391961, "discount": 1237631, "grossProfit": 3717588, "netProfit": 2479957, "margin": 20.01, "used": 149, "status": "흑자", "discountRate": 9.99}, {"code": "CP44", "revenue": 12083806, "discount": 1250753, "grossProfit": 3625142, "netProfit": 2374389, "margin": 19.65, "used": 147, "status": "흑자", "discountRate": 10.35}, {"code": "CP26", "revenue": 10964131, "discount": 1121593, "grossProfit": 3289239, "netProfit": 2167646, "margin": 19.77, "used": 127, "status": "흑자", "discountRate": 10.23}, {"code": "CP41", "revenue": 10230420, "discount": 1041116, "grossProfit": 3069126, "netProfit": 2028010, "margin": 19.82, "used": 111, "status": "흑자", "discountRate": 10.18}, {"code": "CP36", "revenue": 8914878, "discount": 932966, "grossProfit": 2674463, "netProfit": 1741497, "margin": 19.53, "used": 110, "status": "흑자", "discountRate": 10.47}, {"code": "CP04", "revenue": 10153543, "discount": 3740036, "grossProfit": 3046063, "netProfit": -693973, "margin": -6.83, "used": 119, "status": "적자", "discountRate": 36.83}, {"code": "CP10", "revenue": 13014520, "discount": 4761313, "grossProfit": 3904356, "netProfit": -856957, "margin": -6.58, "used": 159, "status": "적자", "discountRate": 36.58}, {"code": "CP11", "revenue": 16486649, "discount": 6090537, "grossProfit": 4945995, "netProfit": -1144542, "margin": -6.94, "used": 188, "status": "적자", "discountRate": 36.94}, {"code": "CP40", "revenue": 15047181, "discount": 5699091, "grossProfit": 4514154, "netProfit": -1184937, "margin": -7.87, "used": 176, "status": "적자", "discountRate": 37.87}, {"code": "CP27", "revenue": 12024087, "discount": 6525556, "grossProfit": 3607226, "netProfit": -2918330, "margin": -24.27, "used": 143, "status": "적자", "discountRate": 54.27}, {"code": "CP34", "revenue": 15783367, "discount": 8703108, "grossProfit": 4735010, "netProfit": -3968098, "margin": -25.14, "used": 175, "status": "적자", "discountRate": 55.14}, {"code": "CP32", "revenue": 16307126, "discount": 8893896, "grossProfit": 4892138, "netProfit": -4001758, "margin": -24.54, "used": 192, "status": "적자", "discountRate": 54.54}, {"code": "CP19", "revenue": 16468450, "discount": 9117046, "grossProfit": 4940535, "netProfit": -4176511, "margin": -25.36, "used": 194, "status": "적자", "discountRate": 55.36}];
+const channelData = {"groupA": {"CP04": {"11번가": 25.0, "G마켓": 25.0, "이마트": 25.0, "네이버": 53.9, "쿠팡": 55.9}, "CP10": {"11번가": 25.0, "G마켓": 25.0, "이마트": 25.0, "네이버": 53.9, "쿠팡": 53.6}, "CP11": {"11번가": 25.0, "G마켓": 25.0, "이마트": 25.0, "네이버": 54.5, "쿠팡": 57.0}, "CP40": {"11번가": 25.0, "G마켓": 25.0, "이마트": 25.0, "네이버": 54.7, "쿠팡": 54.3}}, "groupB": {"CP19": {"11번가": 55.9, "G마켓": 54.2, "이마트": 55.7, "네이버": 55.7, "쿠팡": 55.0}, "CP27": {"11번가": 56.5, "G마켓": 51.7, "이마트": 53.4, "네이버": 54.5, "쿠팡": 54.9}, "CP32": {"11번가": 55.1, "G마켓": 55.3, "이마트": 54.7, "네이버": 55.3, "쿠팡": 53.5}, "CP34": {"11번가": 55.2, "G마켓": 56.1, "이마트": 54.1, "네이버": 55.3, "쿠팡": 54.7}}, "normalAvg": {"11번가": 10.1, "G마켓": 10.1, "이마트": 10.0, "네이버": 10.0, "쿠팡": 10.0}};
+const groupAImpact = {"CP04": {"revenue": 10153543, "actualDiscount": 3740036, "hypoDiscount": 2538396, "excess": 1201640, "actualNet": -693973, "hypoNet": 507667}, "CP10": {"revenue": 13014520, "actualDiscount": 4761313, "hypoDiscount": 3253638, "excess": 1507675, "actualNet": -856957, "hypoNet": 650718}, "CP11": {"revenue": 16486649, "actualDiscount": 6090537, "hypoDiscount": 4121677, "excess": 1968860, "actualNet": -1144542, "hypoNet": 824318}, "CP40": {"revenue": 15047181, "actualDiscount": 5699091, "hypoDiscount": 3761808, "excess": 1937283, "actualNet": -1184937, "hypoNet": 752347}};
+const groupBImpact = {"CP19": {"revenue": 16468450, "discount": 9117046, "net": -4176511, "hypoDiscount": 1646845, "excess": 7470201, "hypoNet": 3293690}, "CP27": {"revenue": 12024087, "discount": 6525556, "net": -2918330, "hypoDiscount": 1202409, "excess": 5323147, "hypoNet": 2404817}, "CP32": {"revenue": 16307126, "discount": 8893896, "net": -4001758, "hypoDiscount": 1630713, "excess": 7263183, "hypoNet": 3261425}, "CP34": {"revenue": 15783367, "discount": 8703108, "net": -3968098, "hypoDiscount": 1578337, "excess": 7124771, "hypoNet": 3156673}};
+const totals = {"revenue": 709453463, "discount": 111569856, "netProfit": 101266183, "used": 8322, "deficitNet": -18945106, "profitNet": 120211289};
+
+const fmt = n => Math.round(n).toLocaleString('ko-KR');
+const fmtPct = n => n.toFixed(1) + '%';
+
+const tooltip = document.getElementById('tooltip');
+function showTip(evt, html) {
+  tooltip.innerHTML = html;
+  tooltip.style.display = 'block';
+  const x = evt.clientX + 14, y = evt.clientY + 14;
+  tooltip.style.left = Math.min(x, window.innerWidth - tooltip.offsetWidth - 10) + 'px';
+  tooltip.style.top = Math.min(y, window.innerHeight - tooltip.offsetHeight - 10) + 'px';
+}
+function hideTip() { tooltip.style.display = 'none'; }
+
+const SVGNS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+
+// ---------- Stat tiles ----------
+(function(){
+  const row = document.getElementById('statRow');
+  const tiles = [
+    {label:'총 매출', value: fmt(totals.revenue)+'원', sub: totals.used.toLocaleString()+'건 결제완료'},
+    {label:'총 할인', value: fmt(totals.discount)+'원', sub: '평균 할인율 ' + (totals.discount/totals.revenue*100).toFixed(1)+'%'},
+    {label:'총 순이익', value: fmt(totals.netProfit)+'원', sub: '44개 쿠폰 합계'},
+    {label:'적자 쿠폰', value: '8 / 44개', sub: '손실 합계 ' + fmt(totals.deficitNet)+'원', cls:'critical'},
+  ];
+  tiles.forEach(t=>{
+    const d = document.createElement('div'); d.className='stat-tile';
+    d.innerHTML = `<div class="stat-label">${t.label}</div><div class="stat-value ${t.cls||''}">${t.value}</div><div class="stat-sub">${t.sub}</div>`;
+    row.appendChild(d);
+  });
+  document.getElementById('execSummary').innerHTML =
+    `<b>핵심 요약</b> — 44개 쿠폰 중 8개(18%)가 적자입니다. 원인은 두 갈래로 확인됩니다: <b>①그룹A(CP04·10·11·40)</b>는 원래 25% 할인 쿠폰이지만 네이버·쿠팡 채널에서만 할인율이 2배 이상(54~57%) 부풀려지는 <b>채널 연동 이중할인 오류</b>, <b>②그룹B(CP19·27·32·34)</b>는 채널과 무관하게 전 채널에서 45~65% 할인율이 적용되는 <b>쿠폰 자체 설계 오류</b>입니다. 그룹A는 채널 버그만 고치면 전부 흑자 전환이 가능합니다.`;
+})();
+
+// ---------- Chart 1: 44-coupon ranking ----------
+(function(){
+  const data = couponData; // already sorted desc by netProfit
+  const svg = document.getElementById('chartRanking');
+  const W = 920, rowH = 14.5, gapTop = 10, gapBottom = 30, leftLabel = 46, rightLabel = 46;
+  const H = data.length * rowH + gapTop + gapBottom;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('width', '100%');
+  svg.setAttribute('height', H);
+
+  const plotL = leftLabel, plotR = W - rightLabel;
+  const plotW = plotR - plotL;
+  const maxAbs = Math.max(...data.map(d=>Math.abs(d.netProfit)));
+  const zeroX = plotL + plotW/2;
+  const scale = (plotW/2 - 4) / maxAbs;
+
+  // zero baseline
+  svg.appendChild(el('line', {x1:zeroX, x2:zeroX, y1:gapTop-2, y2:H-gapBottom+2, stroke:'var(--baseline)', 'stroke-width':1}));
+
+  data.forEach((d, i) => {
+    const y = gapTop + i*rowH;
+    const barW = Math.abs(d.netProfit)*scale;
+    const x = d.netProfit >= 0 ? zeroX : zeroX - barW;
+    const color = d.status === '적자' ? 'var(--critical)' : 'var(--good)';
+    const rect = el('rect', {x, y: y+1.5, width: Math.max(barW,1), height: rowH-4, rx:2, fill: color, opacity: 0.92});
+    rect.style.cursor = 'pointer';
+    rect.addEventListener('mousemove', (e)=> showTip(e, `<div class="t-title">${d.code} · ${d.status}</div>
+      <div class="t-row">순이익: ${fmt(d.netProfit)}원</div>
+      <div class="t-row">매출: ${fmt(d.revenue)}원 · 할인율: ${d.discountRate}%</div>
+      <div class="t-row">순이익률: ${d.margin}% · 사용건수: ${d.used}건</div>`));
+    rect.addEventListener('mouseleave', hideTip);
+    svg.appendChild(rect);
+
+    const label = el('text', {x: plotL-6, y: y+rowH-4.5, 'text-anchor':'end', class:'axis-label', 'font-weight': d.status==='적자'?'700':'400', fill: d.status==='적자' ? 'var(--critical)' : 'var(--text-muted)'});
+    label.textContent = d.code;
+    svg.appendChild(label);
+  });
+
+  // axis labels at ends
+  const lo = el('text', {x: plotL, y: H-8, class:'ref-label', 'text-anchor':'start'}); lo.textContent = fmt(-maxAbs)+'원';
+  const hi = el('text', {x: plotR, y: H-8, class:'ref-label', 'text-anchor':'end'}); hi.textContent = fmt(maxAbs)+'원';
+  const zt = el('text', {x: zeroX, y: H-8, class:'ref-label', 'text-anchor':'middle'}); zt.textContent = '0';
+  svg.appendChild(lo); svg.appendChild(hi); svg.appendChild(zt);
+})();
+
+// ---------- Chart 2: deficit discount rate vs normal ----------
+(function(){
+  const deficit = couponData.filter(d=>d.status==='적자').sort((a,b)=> a.code.localeCompare(b.code));
+  const normalAvg = { code:'정상평균', discountRate: 10.0, group:'base' };
+  const groupA = ['CP04','CP10','CP11','CP40'];
+  const bars = [normalAvg, ...deficit.map(d=>({code:d.code, discountRate:d.discountRate, group: groupA.includes(d.code)?'A':'B'}))];
+
+  const svg = document.getElementById('chartDeficitRate');
+  const W = 920, H = 300, plotL = 46, plotR = W-20, plotT = 16, plotB = 40;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width','100%'); svg.setAttribute('height', H);
+  const plotW = plotR-plotL, plotH = H-plotT-plotB;
+  const maxV = 60;
+  const yScale = v => plotT + plotH - (v/maxV)*plotH;
+  const bw = plotW/bars.length;
+
+  [0,10,20,30,40,50,60].forEach(v=>{
+    const y = yScale(v);
+    svg.appendChild(el('line', {x1:plotL, x2:plotR, y1:y, y2:y, stroke:'var(--grid)', 'stroke-width':1}));
+    const t = el('text', {x:plotL-6, y:y+3, class:'ref-label', 'text-anchor':'end'}); t.textContent=v+'%'; svg.appendChild(t);
+  });
+  // breakeven line at 30
+  const by = yScale(30);
+  const refLine = el('line', {x1:plotL, x2:plotR, y1:by, y2:by, stroke:'var(--critical)', 'stroke-width':1.5, 'stroke-dasharray':'4,3'});
+  svg.appendChild(refLine);
+  const refText = el('text', {x:plotR, y:by-5, class:'ref-label', 'text-anchor':'end', fill:'var(--critical)'}); refText.textContent='손익분기 30%'; svg.appendChild(refText);
+
+  bars.forEach((d,i)=>{
+    const x = plotL + i*bw + bw*0.2;
+    const w = bw*0.6;
+    const y = yScale(d.discountRate);
+    const color = d.group==='base' ? 'var(--series-1)' : (d.group==='A' ? 'var(--series-2)' : 'var(--series-3)');
+    const rect = el('rect', {x, y, width:w, height: plotT+plotH-y, rx:2, fill:color, opacity:0.92});
+    rect.style.cursor='pointer';
+    rect.addEventListener('mousemove', e=>showTip(e, `<div class="t-title">${d.code}</div><div class="t-row">할인율: ${d.discountRate}%</div>`));
+    rect.addEventListener('mouseleave', hideTip);
+    svg.appendChild(rect);
+    const lbl = el('text', {x:x+w/2, y:plotT+plotH+14, class:'axis-label', 'text-anchor':'middle'}); lbl.textContent=d.code; svg.appendChild(lbl);
+    const vlbl = el('text', {x:x+w/2, y:y-5, class:'ref-label', 'text-anchor':'middle', fill:'var(--text-primary)'}); vlbl.textContent=d.discountRate+'%'; svg.appendChild(vlbl);
+  });
+})();
+
+// ---------- Chart 3 & 4: channel breakdown ----------
+function drawChannelChart(svgId, groupObj, refValue, refLabelText, anomalyChannels) {
+  const channels = ['11번가','G마켓','이마트','네이버','쿠팡'];
+  const codes = Object.keys(groupObj);
+  const avg = {};
+  channels.forEach(ch=>{
+    avg[ch] = codes.reduce((s,c)=>s+groupObj[c][ch],0)/codes.length;
+  });
+
+  const svg = document.getElementById(svgId);
+  const W = 920, H = 260, plotL = 46, plotR = W-20, plotT = 16, plotB = 34;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width','100%'); svg.setAttribute('height', H);
+  const plotW = plotR-plotL, plotH = H-plotT-plotB;
+  const maxV = 65;
+  const yScale = v => plotT + plotH - (v/maxV)*plotH;
+  const bw = plotW/channels.length;
+
+  [0,10,20,30,40,50,60].forEach(v=>{
+    const y = yScale(v);
+    svg.appendChild(el('line', {x1:plotL, x2:plotR, y1:y, y2:y, stroke:'var(--grid)', 'stroke-width':1}));
+    const t = el('text', {x:plotL-6, y:y+3, class:'ref-label', 'text-anchor':'end'}); t.textContent=v+'%'; svg.appendChild(t);
+  });
+
+  const ry = yScale(refValue);
+  svg.appendChild(el('line', {x1:plotL, x2:plotR, y1:ry, y2:ry, stroke:'var(--text-muted)', 'stroke-width':1.5, 'stroke-dasharray':'4,3'}));
+  const rt = el('text', {x:plotR, y:ry-5, class:'ref-label', 'text-anchor':'end'}); rt.textContent=refLabelText; svg.appendChild(rt);
+
+  channels.forEach((ch,i)=>{
+    const x = plotL + i*bw + bw*0.25;
+    const w = bw*0.5;
+    const v = avg[ch];
+    const y = yScale(v);
+    const isAnomaly = anomalyChannels.includes(ch);
+    const color = isAnomaly ? 'var(--critical)' : 'var(--series-1)';
+    const rect = el('rect', {x, y, width:w, height: plotT+plotH-y, rx:3, fill:color, opacity:0.92});
+    rect.style.cursor='pointer';
+    rect.addEventListener('mousemove', e=>showTip(e, `<div class="t-title">${ch}</div><div class="t-row">평균 할인율: ${v.toFixed(1)}%</div><div class="t-row">${isAnomaly?'이상 채널':'정상 채널'}</div>`));
+    rect.addEventListener('mouseleave', hideTip);
+    svg.appendChild(rect);
+    const lbl = el('text', {x:x+w/2, y:plotT+plotH+16, class:'axis-label', 'text-anchor':'middle', 'font-size':'11px'}); lbl.textContent=ch; svg.appendChild(lbl);
+    const vlbl = el('text', {x:x+w/2, y:y-6, class:'ref-label', 'text-anchor':'middle', fill:'var(--text-primary)', 'font-weight':'700'}); vlbl.textContent=v.toFixed(1)+'%'; svg.appendChild(vlbl);
+  });
+}
+drawChannelChart('chartGroupA', channelData.groupA, 25, '설계값 25%', ['네이버','쿠팡']);
+drawChannelChart('chartGroupB', channelData.groupB, 10, '정상 평균 10%', ['11번가','G마켓','이마트','네이버','쿠팡']);
+
+// ---------- Deficit table ----------
+(function(){
+  const deficit = couponData.filter(d=>d.status==='적자').sort((a,b)=>a.netProfit-b.netProfit);
+  const t = document.getElementById('deficitTable');
+  let html = `<thead><tr><th>쿠폰코드</th><th>매출</th><th>할인</th><th>할인율</th><th>순이익</th><th>순이익률</th><th>사용건수</th></tr></thead><tbody>`;
+  deficit.forEach(d=>{
+    html += `<tr><td class="code status-적자">${d.code}</td><td>${fmt(d.revenue)}</td><td>${fmt(d.discount)}</td><td>${d.discountRate}%</td><td class="status-적자">${fmt(d.netProfit)}</td><td class="status-적자">${d.margin}%</td><td>${d.used}</td></tr>`;
+  });
+  html += '</tbody>';
+  t.innerHTML = html;
+})();
+
+// ---------- Group A / B impact tables ----------
+(function(){
+  const ta = document.getElementById('groupATable');
+  let h = `<thead><tr><th>쿠폰</th><th>현재 순이익</th><th>수정 후 순이익</th><th>회복액</th></tr></thead><tbody>`;
+  Object.keys(groupAImpact).forEach(cp=>{
+    const v = groupAImpact[cp];
+    h += `<tr><td class="code">${cp}</td><td class="status-적자">${fmt(v.actualNet)}</td><td style="color:var(--good-text)">${fmt(v.hypoNet)}</td><td>+${fmt(v.excess)}</td></tr>`;
+  });
+  const totA = Object.values(groupAImpact).reduce((s,v)=>({actualNet:s.actualNet+v.actualNet, hypoNet:s.hypoNet+v.hypoNet, excess:s.excess+v.excess}), {actualNet:0,hypoNet:0,excess:0});
+  h += `<tr style="font-weight:700"><td>합계</td><td class="status-적자">${fmt(totA.actualNet)}</td><td style="color:var(--good-text)">${fmt(totA.hypoNet)}</td><td>+${fmt(totA.excess)}</td></tr>`;
+  h += '</tbody>';
+  ta.innerHTML = h;
+
+  const tb = document.getElementById('groupBTable');
+  let h2 = `<thead><tr><th>쿠폰</th><th>현재 순이익</th><th>정상화 시 순이익</th><th>회복액</th></tr></thead><tbody>`;
+  Object.keys(groupBImpact).forEach(cp=>{
+    const v = groupBImpact[cp];
+    h2 += `<tr><td class="code">${cp}</td><td class="status-적자">${fmt(v.net)}</td><td style="color:var(--good-text)">${fmt(v.hypoNet)}</td><td>+${fmt(v.excess)}</td></tr>`;
+  });
+  const totB = Object.values(groupBImpact).reduce((s,v)=>({net:s.net+v.net, hypoNet:s.hypoNet+v.hypoNet, excess:s.excess+v.excess}), {net:0,hypoNet:0,excess:0});
+  h2 += `<tr style="font-weight:700"><td>합계</td><td class="status-적자">${fmt(totB.net)}</td><td style="color:var(--good-text)">${fmt(totB.hypoNet)}</td><td>+${fmt(totB.excess)}</td></tr>`;
+  h2 += '</tbody>';
+  tb.innerHTML = h2;
+})();
+</script>
+
+</body>
+</html>

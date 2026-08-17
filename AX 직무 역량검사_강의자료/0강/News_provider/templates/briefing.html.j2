@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0; padding:0; background:#f4f5f7; font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif; color:#1f2329;">
+  <div style="max-width:680px; margin:0 auto; padding:24px 16px;">
+
+    <div style="background:#1f2329; color:#fff; border-radius:12px; padding:20px 24px;">
+      <div style="font-size:20px; font-weight:700;">📰 데일리 뉴스 브리핑</div>
+      <div style="font-size:13px; opacity:.8; margin-top:6px;">
+        {{ date_label }} · 지난 {{ window_hours }}시간 주요 뉴스 · 총 {{ total }}건 선별
+      </div>
+    </div>
+
+    {% for sec in sections %}
+    <div style="margin-top:22px;">
+      <div style="font-size:16px; font-weight:700; padding:8px 4px; border-bottom:2px solid #1f2329;">
+        {{ sec.name }} <span style="color:#888; font-weight:400; font-size:13px;">({{ sec.articles|length }})</span>
+      </div>
+
+      {% if sec.articles %}
+        {% for a in sec.articles %}
+        <div style="background:#fff; border-radius:10px; padding:14px 16px; margin-top:12px; border:1px solid #e6e8eb;">
+          <a href="{{ a.url }}" style="font-size:15px; font-weight:600; color:#1a73e8; text-decoration:none; line-height:1.4;">
+            {{ a.title }}
+          </a>
+          <div style="font-size:13px; color:#3c4149; margin-top:8px; line-height:1.6;">
+            {{ a.summary }}
+          </div>
+          <div style="font-size:11px; color:#888; margin-top:8px;">
+            {{ a.source }} · {{ a.time_label }}
+            · {{ "⭐" * a.importance }}
+            {% if a.is_community and a.social_score %}· 👍 {{ a.social_score }} / 💬 {{ a.social_comments }}{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div style="font-size:13px; color:#999; padding:12px 4px;">주요 뉴스 없음</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    <div style="font-size:11px; color:#aab; text-align:center; margin-top:28px; line-height:1.6;">
+      생성 시각 {{ generated_label }} (KST)<br>
+      News Brief Bot · 다음 발송 내일 07:00
+    </div>
+
+  </div>
+</body>
+</html>

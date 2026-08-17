@@ -1,0 +1,106 @@
+# 수집 소스 정의.
+# - rss        : 언론사/커뮤니티 직접 RSS (URL 은 변경될 수 있어 주기적 점검 권장)
+# - google_news: 구글뉴스 키워드 RSS (가장 안정적, 카테고리 보강용)
+# enabled: false 로 두면 해당 소스 건너뜀.
+
+rss:
+  - name: AI타임즈
+    url: https://www.aitimes.com/rss/allArticle.xml
+    enabled: true
+  - name: 동아일보
+    url: https://rss.donga.com/total.xml
+    enabled: true
+  - name: 경향신문
+    url: https://www.khan.co.kr/rss/rssdata/total_news.xml
+    enabled: true
+  - name: 한겨레
+    url: https://www.hani.co.kr/rss/
+    enabled: true
+    undated: true            # 한겨레 피드는 날짜가 없어 최신글로 간주
+  - name: 매일경제
+    url: https://www.mk.co.kr/rss/30000001/
+    enabled: true
+  # 중앙일보는 공식 RSS 가 폐기되어 구글뉴스 사이트검색 RSS 로 대체
+  - name: 중앙일보
+    url: "https://news.google.com/rss/search?q=site:joongang.co.kr+when:1d&hl=ko&gl=KR&ceid=KR:ko"
+    enabled: true
+  - name: GeekNews
+    url: https://feeds.feedburner.com/geeknews-feed
+    enabled: true
+  - name: 연합뉴스
+    url: https://www.yna.co.kr/rss/news.xml
+    enabled: true
+  - name: MBC
+    url: https://imnews.imbc.com/rss/google_news/narrativeNews.rss
+    enabled: true
+  - name: SBS
+    url: https://news.sbs.co.kr/news/newsflashRssFeed.do?plink=RSSREADER
+    enabled: true
+  - name: JTBC
+    url: https://fs.jtbc.co.kr/RSS/newsflash.xml
+    enabled: true
+  - name: 전자신문
+    url: https://rss.etnews.com/Section901.xml
+    enabled: true
+  - name: 오마이뉴스
+    url: https://rss.ohmynews.com/rss/ohmynews.xml
+    enabled: true
+  - name: 블로터
+    url: https://www.bloter.net/rss/allArticle.xml
+    enabled: true
+  - name: 프레시안
+    url: https://www.pressian.com/api/v3/site/rss/news
+    enabled: true
+  # 공식 RSS 가 확인되지 않아 구글뉴스 사이트검색 RSS 로 대체
+  - name: KBS
+    url: "https://news.google.com/rss/search?q=site:news.kbs.co.kr+when:1d&hl=ko&gl=KR&ceid=KR:ko"
+    enabled: true
+  - name: YTN
+    url: "https://news.google.com/rss/search?q=site:ytn.co.kr+when:1d&hl=ko&gl=KR&ceid=KR:ko"
+    enabled: true
+  - name: 뉴스1
+    url: "https://news.google.com/rss/search?q=site:news1.kr+when:1d&hl=ko&gl=KR&ceid=KR:ko"
+    enabled: true
+  - name: 한국일보
+    url: "https://news.google.com/rss/search?q=site:hankookilbo.com+when:1d&hl=ko&gl=KR&ceid=KR:ko"
+    enabled: true
+  - name: 지디넷코리아
+    url: "https://news.google.com/rss/search?q=site:zdnet.co.kr+when:1d&hl=ko&gl=KR&ceid=KR:ko"
+    enabled: true
+
+  # 국제뉴스 (INTL) 소스
+  - name: BBC
+    url: https://feeds.bbci.co.uk/news/world/rss.xml
+    enabled: true
+  # CNN 공식 RSS 는 2023년 이후 갱신이 끊겨 구글뉴스 사이트검색 RSS 로 대체
+  - name: CNN
+    url: "https://news.google.com/rss/search?q=site:cnn.com+when:1d&hl=en&gl=US&ceid=US:en"
+    enabled: true
+  # 로이터 공식 RSS 는 폐기되어 구글뉴스 사이트검색 RSS 로 대체
+  - name: 로이터
+    url: "https://news.google.com/rss/search?q=site:reuters.com+when:1d&hl=en&gl=US&ceid=US:en"
+    enabled: true
+
+  # 경제뉴스 (ECON) 소스
+  - name: 블룸버그
+    url: https://feeds.bloomberg.com/economics/news.rss
+    enabled: true
+  - name: 한국경제신문
+    url: https://www.hankyung.com/feed/economy
+    enabled: true
+
+# 구글뉴스 키워드 검색 RSS. 카테고리 코드별로 쿼리를 둠.
+# hl=ko, gl=KR 로 한국어/한국 결과. when:1d = 최근 1일.
+google_news:
+  - code: ADMISSION
+    query: "수능 OR 대입 OR 입시 OR 의대증원"
+  - code: AI
+    query: "인공지능 OR OpenAI OR Anthropic OR 생성형 AI OR LLM"
+  - code: JOB
+    query: "채용시장 OR 고용동향 OR 사람인 OR 잡코리아 OR 원티드"
+  - code: IT
+    query: "반도체 OR 빅테크 OR 클라우드 OR IT 동향"
+  - code: INTL
+    query: "국제뉴스 OR 외신 OR 미중관계 OR 국제정세"
+  - code: ECON
+    query: "경제전망 OR 금리 OR 환율 OR 코스피 OR 인플레이션"
