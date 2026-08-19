@@ -1,0 +1,419 @@
+<title>쿠폰 프로모션 성과 보고</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --paper:   #F5F7F9;
+    --surface: #FFFFFF;
+    --sunken:  #EDF1F4;
+    --ink:     #141C25;
+    --muted:   #5B6874;
+    --faint:   #8593A0;
+    --rule:    #D8DEE4;
+    --hair:    #E6EBEF;
+    --accent:  #1D4E6B;
+    --loss:    #A22B1D;
+    --loss-bg: #F6E7E4;
+    --ok:      #2C6A51;
+    --ok-bg:   #E4EFE9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:   #10151A;
+      --surface: #181F26;
+      --sunken:  #1E262E;
+      --ink:     #E4EAEF;
+      --muted:   #9AA7B3;
+      --faint:   #7A8794;
+      --rule:    #2B343D;
+      --hair:    #232B33;
+      --accent:  #7CB1CD;
+      --loss:    #E2796B;
+      --loss-bg: #35211E;
+      --ok:      #6DBE95;
+      --ok-bg:   #1C2C25;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:   #10151A;
+    --surface: #181F26;
+    --sunken:  #1E262E;
+    --ink:     #E4EAEF;
+    --muted:   #9AA7B3;
+    --faint:   #7A8794;
+    --rule:    #2B343D;
+    --hair:    #232B33;
+    --accent:  #7CB1CD;
+    --loss:    #E2796B;
+    --loss-bg: #35211E;
+    --ok:      #6DBE95;
+    --ok-bg:   #1C2C25;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Noto Sans KR", system-ui, -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.75;
+    margin: 0;
+    padding: 40px 20px 72px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .sheet {
+    max-width: 860px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    padding: 52px 56px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 38px;
+  }
+  @media (max-width: 640px) {
+    body { padding: 16px 12px 48px; }
+    .sheet { padding: 32px 22px 36px; gap: 30px; }
+  }
+
+  /* ── 문서 머리 ── */
+  .masthead { display: flex; flex-direction: column; gap: 18px; }
+  .kicker {
+    font-size: 11px; font-weight: 700; letter-spacing: .16em;
+    color: var(--accent); text-transform: uppercase;
+  }
+  h1 {
+    font-family: "Noto Serif KR", serif;
+    font-size: 30px; font-weight: 700; line-height: 1.3;
+    margin: 0; text-wrap: balance; letter-spacing: -.01em;
+  }
+  .meta {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 4px 28px;
+    padding-top: 16px; border-top: 2px solid var(--ink);
+    font-size: 12.5px; color: var(--muted);
+  }
+  .meta div { display: flex; gap: 8px; }
+  .meta dt { color: var(--faint); flex: 0 0 62px; }
+  .meta dd { margin: 0; color: var(--ink); }
+
+  /* ── 섹션 ── */
+  section { display: flex; flex-direction: column; gap: 14px; }
+  h2 {
+    font-family: "Noto Serif KR", serif;
+    font-size: 16px; font-weight: 600; margin: 0;
+    display: flex; align-items: baseline; gap: 10px;
+    padding-bottom: 9px; border-bottom: 1px solid var(--rule);
+  }
+  h2 .no {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px; font-weight: 600; color: var(--accent);
+  }
+  p { margin: 0; }
+  .num {
+    font-family: "IBM Plex Mono", monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600; letter-spacing: -.01em;
+  }
+  cite {
+    font-style: normal; font-size: 11px; color: var(--faint);
+    white-space: nowrap;
+  }
+
+  /* ── ① 결론 ── */
+  .verdict {
+    border-left: 4px solid var(--accent);
+    padding: 4px 0 4px 22px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .verdict p { font-size: 17px; line-height: 1.68; }
+  .verdict .ask {
+    font-weight: 700; color: var(--accent);
+    font-size: 17.5px;
+  }
+  .verdict .loss-fig { color: var(--loss); }
+
+  /* ── 표 ── */
+  .scroll { overflow-x: auto; }
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 13.5px; font-variant-numeric: tabular-nums;
+  }
+  caption {
+    caption-side: bottom; text-align: left; padding-top: 9px;
+    font-size: 11px; color: var(--faint);
+  }
+  th, td { padding: 9px 10px; text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; white-space: normal; }
+  thead th {
+    font-size: 11.5px; font-weight: 700; color: var(--muted);
+    border-bottom: 1.5px solid var(--ink);
+    letter-spacing: .02em;
+  }
+  tbody td { border-bottom: 1px solid var(--hair); }
+  tbody td:not(:first-child) { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; }
+  tbody tr.total td { font-weight: 700; background: var(--sunken); border-bottom: 1.5px solid var(--rule); }
+  tbody tr.sub td:first-child { padding-left: 24px; color: var(--muted); font-size: 12.5px; }
+  tbody tr.flag td { color: var(--loss); }
+  tbody tr:last-child td { border-bottom: none; }
+  .neg { color: var(--loss); }
+  .pos { color: var(--ok); }
+
+  /* ── ③ 원인 ── */
+  .finding {
+    background: var(--sunken);
+    border-left: 3px solid var(--rule);
+    padding: 16px 20px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .finding.critical { border-left-color: var(--loss); }
+  .finding h3 {
+    font-size: 13.5px; font-weight: 700; margin: 0;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 9px;
+  }
+  .finding p { font-size: 13.5px; line-height: 1.72; color: var(--muted); }
+  .finding p strong { color: var(--ink); font-weight: 500; }
+  .tag {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .05em;
+    padding: 2px 8px; border-radius: 2px;
+  }
+  .tag.bad  { background: var(--loss-bg); color: var(--loss); }
+  .tag.good { background: var(--ok-bg);   color: var(--ok); }
+
+  /* ── ④ 건의 ── */
+  ol.actions { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+  ol.actions li {
+    display: grid; grid-template-columns: 74px 1fr;
+    gap: 18px; padding: 13px 0; border-bottom: 1px solid var(--hair);
+  }
+  ol.actions li:last-child { border-bottom: none; }
+  .when {
+    font-size: 11px; font-weight: 700; letter-spacing: .04em;
+    color: var(--accent); padding-top: 3px;
+  }
+  .when.now { color: var(--loss); }
+  .act-t { font-weight: 700; font-size: 14px; }
+  .act-d { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+  /* ── ⑤ 출처 ── */
+  .check { font-weight: 700; color: var(--ok); }
+
+  /* ── 첨부 ── */
+  details {
+    border: 1px solid var(--rule);
+    background: var(--sunken);
+  }
+  summary {
+    cursor: pointer; padding: 13px 18px;
+    font-size: 12.5px; font-weight: 700; color: var(--muted);
+    list-style: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: "▸ "; color: var(--accent); }
+  details[open] summary::before { content: "▾ "; }
+  details[open] summary { border-bottom: 1px solid var(--rule); }
+  .attach-body { padding: 18px; display: flex; flex-direction: column; gap: 28px; background: var(--surface); }
+  .attach-body h4 { font-size: 12.5px; margin: 0 0 8px; font-weight: 700; }
+  a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+
+<div class="sheet">
+
+  <header class="masthead">
+    <div class="kicker">대표이사 보고</div>
+    <h1>쿠폰 프로모션 성과 보고 — 적자 쿠폰 8종 원인과 조치 건의</h1>
+    <dl class="meta">
+      <div><dt>분석 대상</dt><dd>쿠폰 44종 · 결제완료 주문 8,322건</dd></div>
+      <div><dt>분석 기간</dt><dd>2025년 1월 1일 ~ 6월 30일</dd></div>
+      <div><dt>근거 자료</dt><dd>7.쿠폰별성과표.xlsx, 6.GA5_주문종합.xlsx</dd></div>
+      <div><dt>검산</dt><dd><span class="check">완료</span> — 44종 전부 원자료와 대조</dd></div>
+    </dl>
+  </header>
+
+  <!-- ① 결론 요약 -->
+  <section>
+    <h2><span class="no">①</span> 결론 요약</h2>
+    <div class="verdict">
+      <p>상반기 쿠폰 44종의 순이익은 <span class="num">1억 126만원</span>입니다. 그중 8종이 <span class="num loss-fig">1,894만원 손실</span>을 냈고, 손실은 하루 <span class="num loss-fig">10만원</span>씩 지금도 쌓이고 있습니다. <cite>(7.쿠폰별성과표.xlsx 집계표)</cite></p>
+      <p>손실의 <span class="num">80%</span>는 쿠폰 4종에서 나왔습니다. 이 4종은 사용된 <span class="num">704건 전부</span>가 할인율 <span class="num">45%</span>를 넘어, 팔수록 손해가 나는 구조였습니다. <cite>(6.GA5_주문종합.xlsx 주문)</cite></p>
+      <p class="ask">요청드리는 결정 — 쿠폰 4종(CP19·CP27·CP32·CP34)의 발급과 사용을 즉시 중단해 주십시오.</p>
+    </div>
+  </section>
+
+  <!-- ② 핵심 지표 -->
+  <section>
+    <h2><span class="no">②</span> 핵심 지표</h2>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>구분</th><th>쿠폰 수</th><th>매출</th><th>할인</th><th>순이익</th><th>순이익률</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="total">
+            <td>전체</td><td>44종</td><td>709,453,463</td><td>111,569,856</td><td>101,266,183</td><td>14.3%</td>
+          </tr>
+          <tr>
+            <td>정상 쿠폰</td><td>36종</td><td>594,168,540</td><td>58,039,273</td><td class="pos">120,211,289</td><td class="pos">20.2%</td>
+          </tr>
+          <tr class="flag">
+            <td>적자 쿠폰</td><td>8종</td><td>115,284,923</td><td>53,530,583</td><td>−18,945,106</td><td>−16.4%</td>
+          </tr>
+          <tr class="sub flag">
+            <td>중단 건의 4종 (CP19·CP27·CP32·CP34)</td><td>4종</td><td>60,583,030</td><td>33,239,606</td><td>−15,064,697</td><td>−24.9%</td>
+          </tr>
+          <tr class="sub flag">
+            <td>채널 점검 4종 (CP04·CP10·CP11·CP40)</td><td>4종</td><td>54,701,893</td><td>20,290,977</td><td>−3,880,409</td><td>−7.1%</td>
+          </tr>
+        </tbody>
+        <caption>단위 원. 7.쿠폰별성과표.xlsx '집계표' 시트 — 6.GA5_주문종합.xlsx '주문' 시트와 대조 완료(44/44 일치).</caption>
+      </table>
+    </div>
+  </section>
+
+  <!-- ③ 원인 분석 -->
+  <section>
+    <h2><span class="no">③</span> 원인 분석</h2>
+
+    <p style="font-size:13.5px;color:var(--muted)">이 사업의 이익은 매출의 <strong style="color:var(--ink);font-weight:500">30%</strong>입니다. 44종 전부 매출이익이 매출의 정확히 30%로 계산되어 있습니다 <cite>(7.쿠폰별성과표.xlsx 집계표)</cite>. 따라서 <strong style="color:var(--ink);font-weight:500">할인율이 30%를 넘는 주문은 팔릴 때마다 손해</strong>가 납니다. 이 30%가 아래 판단의 기준선입니다.</p>
+
+    <div class="finding critical">
+      <h3>쿠폰 4종 — 쿠폰 자체가 손해 나는 할인율로 발급됨 <span class="tag bad">CP19 · CP27 · CP32 · CP34</span></h3>
+      <p>사용된 <strong>704건 전부</strong>가 할인율 <strong>45.0% ~ 65.0%</strong>로, 기준선 30%를 넘지 않은 주문이 <strong>한 건도 없습니다</strong>. 판매 채널 5곳의 평균 할인율도 11번가 55.6%, G마켓 54.6%, 네이버 55.2%, 이마트 54.6%, 쿠팡 54.5%로 모두 같습니다 <cite>(6.GA5_주문종합.xlsx 주문)</cite>. 특정 채널이나 특정 시기의 문제가 아니라 <strong>쿠폰의 할인율 자체가 처음부터 이익이 남을 수 없는 수준</strong>이었습니다. 손실 <strong>1,506만원</strong>, 하루 평균 <strong>8만 3천원</strong>입니다 <cite>(7.쿠폰별성과표.xlsx 집계표)</cite>.</p>
+    </div>
+
+    <div class="finding">
+      <h3>쿠폰 4종 — 두 개 채널에서만 할인이 두 배로 붙음 <span class="tag bad">CP04 · CP10 · CP11 · CP40</span></h3>
+      <p>같은 쿠폰인데 채널에 따라 할인율이 갈립니다. 11번가·G마켓·이마트에서 팔린 <strong>378건은 전부 정확히 25.0%</strong>로 <strong class="pos">162만원 이익</strong>을 냈지만, 네이버·쿠팡에서 팔린 <strong>264건은 전부 54.6%</strong>로 <strong>550만원 손실</strong>을 냈습니다 <cite>(6.GA5_주문종합.xlsx 주문)</cite>. 중간값에 해당하는 주문은 한 건도 없어, 두 채널에서만 할인이 한 번 더 얹힌 것으로 보입니다. <strong>쿠폰 설계는 정상이고 두 채널에서만 문제가 생긴 것</strong>이므로, 쿠폰 전체를 막으면 나머지 3개 채널의 이익까지 함께 잃게 됩니다.</p>
+    </div>
+
+    <div class="finding">
+      <h3>정상 쿠폰 36종은 이상 없음 <span class="tag good">이상 없음</span></h3>
+      <p>주문 <strong>6,976건</strong> 중 기준선 30%를 넘은 주문은 <strong>0건</strong>, 가장 높은 할인율도 <strong>15.0%</strong>였습니다 <cite>(6.GA5_주문종합.xlsx 주문)</cite>. 문제는 위 8종에 한정되어 있고, 다른 쿠폰으로 번지지 않았습니다.</p>
+    </div>
+  </section>
+
+  <!-- ④ 건의 -->
+  <section>
+    <h2><span class="no">④</span> 건의 · 다음 액션</h2>
+    <ol class="actions">
+      <li>
+        <div class="when now">즉시</div>
+        <div>
+          <div class="act-t">쿠폰 4종(CP19·CP27·CP32·CP34) 발급·사용 중단</div>
+          <div class="act-d">704건 전부가 손해 나는 할인율이므로 쓰일수록 손실이 커집니다. 중단하면 하루 8만 3천원의 손실이 그날로 멈춥니다 <cite>(7.쿠폰별성과표.xlsx 집계표)</cite>. 원인은 이미 확인되었으므로 추가 조사를 기다릴 필요가 없습니다.</div>
+        </div>
+      </li>
+      <li>
+        <div class="when now">즉시</div>
+        <div>
+          <div class="act-t">쿠폰 4종(CP04·CP10·CP11·CP40)의 네이버·쿠팡 판매만 중단</div>
+          <div class="act-d">쿠폰 전체가 아니라 <strong>두 채널만</strong> 막습니다. 나머지 3개 채널은 162만원 이익을 내고 있어 함께 막으면 그 이익까지 잃습니다 <cite>(6.GA5_주문종합.xlsx 주문)</cite>. 하루 3만원의 손실이 멈춥니다.</div>
+        </div>
+      </li>
+      <li>
+        <div class="when">2일 내</div>
+        <div>
+          <div class="act-t">네이버·쿠팡에서 할인이 한 번 더 붙은 경로 확인</div>
+          <div class="act-d">정상 쿠폰 36종은 같은 두 채널에서도 할인율이 정상이므로 <cite>(6.GA5_주문종합.xlsx 주문)</cite>, 확인 범위는 위 4종의 채널 등록 설정으로 좁혀집니다. 할인이 어디서 더 붙었는지는 주문 자료에 기록되어 있지 않아 시스템 확인이 필요합니다.</div>
+        </div>
+      </li>
+      <li>
+        <div class="when">1주 내</div>
+        <div>
+          <div class="act-t">할인율 30% 초과 발급을 시스템에서 차단</div>
+          <div class="act-d">이익률이 30%이므로 30%가 손익분기선입니다. 정상 쿠폰은 모두 15% 이내에서 운영되고 있어 <cite>(6.GA5_주문종합.xlsx 주문)</cite> 이 상한을 걸어도 기존 운영에는 영향이 없습니다.</div>
+        </div>
+      </li>
+      <li>
+        <div class="when">별도</div>
+        <div>
+          <div class="act-t">CP05가 실제로 작동했는지 확인</div>
+          <div class="act-d">184건이 사용되었는데 할인액이 전부 0원입니다 <cite>(7.쿠폰별성과표.xlsx 집계표)</cite>. 44종 중 유일합니다. 손실과는 무관하지만, 고객이 쿠폰을 쓰고도 할인을 받지 못했을 수 있습니다.</div>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ⑤ 근거 자료 출처 -->
+  <section>
+    <h2><span class="no">⑤</span> 근거 자료 출처 · 검산</h2>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th>파일</th><th>시트</th><th>사용 범위</th><th>검산 내용</th><th>결과</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>7.쿠폰별성과표.xlsx</td><td>집계표</td><td>쿠폰 44종 성과</td>
+            <td>매출·할인·건수를 원자료와 대조</td><td class="check">44/44 일치</td>
+          </tr>
+          <tr>
+            <td>6.GA5_주문종합.xlsx</td><td>주문</td><td>결제완료 8,322건</td>
+            <td>주문 건별 할인율·채널 재계산</td><td class="check">완료</td>
+          </tr>
+          <tr>
+            <td colspan="3">계산식 확인 — 매출이익 = 매출 × 30%</td>
+            <td>44종 전수</td><td class="check">전부 일치</td>
+          </tr>
+          <tr>
+            <td colspan="3">계산식 확인 — 순이익 = 매출이익 − 할인</td>
+            <td>44종 전수</td><td class="check">전부 일치</td>
+          </tr>
+        </tbody>
+        <caption>집계표는 전체 주문 9,389건이 아니라 결제완료 8,322건만 집계한 것으로 확인됨. 취소 1,067건은 이 보고서 범위에서 제외.</caption>
+      </table>
+    </div>
+  </section>
+
+  <!-- 첨부 -->
+  <details>
+    <summary>첨부 — 적자 쿠폰 8종 상세, 채널별 할인율</summary>
+    <div class="attach-body">
+
+      <div>
+        <h4>첨부 1. 적자 쿠폰 8종 상세</h4>
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr><th>쿠폰</th><th>매출</th><th>할인</th><th>할인율</th><th>순이익</th><th>사용건수</th></tr>
+            </thead>
+            <tbody>
+              <tr class="flag"><td>CP19</td><td>16,468,450</td><td>9,117,046</td><td>55.4%</td><td>−4,176,511</td><td>194</td></tr>
+              <tr class="flag"><td>CP32</td><td>16,307,126</td><td>8,893,896</td><td>54.5%</td><td>−4,001,758</td><td>192</td></tr>
+              <tr class="flag"><td>CP34</td><td>15,783,367</td><td>8,703,108</td><td>55.1%</td><td>−3,968,098</td><td>175</td></tr>
+              <tr class="flag"><td>CP27</td><td>12,024,087</td><td>6,525,556</td><td>54.3%</td><td>−2,918,330</td><td>143</td></tr>
+              <tr class="flag"><td>CP40</td><td>15,047,181</td><td>5,699,091</td><td>37.9%</td><td>−1,184,937</td><td>176</td></tr>
+              <tr class="flag"><td>CP11</td><td>16,486,649</td><td>6,090,537</td><td>36.9%</td><td>−1,144,542</td><td>188</td></tr>
+              <tr class="flag"><td>CP10</td><td>13,014,520</td><td>4,761,313</td><td>36.6%</td><td>−856,957</td><td>159</td></tr>
+              <tr class="flag"><td>CP04</td><td>10,153,543</td><td>3,740,036</td><td>36.8%</td><td>−693,973</td><td>119</td></tr>
+              <tr class="total"><td>합계</td><td>115,284,923</td><td>53,530,583</td><td>46.4%</td><td>−18,945,106</td><td>1,346</td></tr>
+            </tbody>
+            <caption>단위 원. 7.쿠폰별성과표.xlsx '집계표' 시트.</caption>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h4>첨부 2. 채널별 평균 할인율</h4>
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr><th>구분</th><th>11번가</th><th>G마켓</th><th>이마트</th><th>네이버</th><th>쿠팡</th></tr>
+            </thead>
+            <tbody>
+              <tr class="flag"><td>중단 건의 4종</td><td>55.6%</td><td>54.6%</td><td>54.6%</td><td>55.2%</td><td>54.5%</td></tr>
+              <tr><td>채널 점검 4종</td><td>25.0%</td><td>25.0%</td><td>25.0%</td><td class="neg">54.3%</td><td class="neg">55.2%</td></tr>
+              <tr><td>정상 36종</td><td class="pos">9.8%</td><td class="pos">9.9%</td><td class="pos">9.8%</td><td class="pos">9.7%</td><td class="pos">9.6%</td></tr>
+            </tbody>
+            <caption>6.GA5_주문종합.xlsx '주문' 시트, 결제완료 8,322건 기준. 손익분기선은 30%.</caption>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </details>
+
+</div>
